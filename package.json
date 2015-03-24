@@ -1,0 +1,26 @@
+{
+  "name": "netmsg",
+  "version": "0.0.1",
+  "description": "Send/receive kv pairs between network endpoints",
+  "main": "netmsg.js",
+  "directories": {
+  },
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/markbertoglio/netmsg.git"
+  },
+  "author": "Mark Bertoglio",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/markbertoglio/netmsg/issues"
+  },
+  "homepage": "https://github.com/markbertoglio/netmsg",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "mocha"              : "*",
+    "expect.js"          : "*",
+  }
+}
