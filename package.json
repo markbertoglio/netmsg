@@ -21,6 +21,6 @@
   },
   "devDependencies": {
     "mocha"              : "*",
-    "expect.js"          : "*",
+    "expect.js"          : "*"
   }
 }

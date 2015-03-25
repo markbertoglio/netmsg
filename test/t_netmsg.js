@@ -21,8 +21,12 @@ function basic(done) {
       console.log("closed", err);
     });
 
-    client.on('sendCompleted', function(err, result) {
-      console.log("Send completed", err, result);
+    client.on('sendCompleted', function() {
+      console.log("Client Send completed");
+    });
+
+    client.on('newMessage', function(msg) {
+      console.log("Client received", msg);
     });
   });
 
@@ -34,6 +38,8 @@ function basic(done) {
   });
 
   server.on('newMessage', function(conn, msg) {
-    console.log("NEW MSG", conn, msg);
+    console.log("Server received", conn, msg);
+    server.send(connection, "right:back,at:ya\n");
   });
+
 }

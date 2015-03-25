@@ -3,30 +3,29 @@ var EventEmitter = require('events').EventEmitter;
 var net = require('net');
 
 
-
 var server = function(port) {
   var self = this;
-  var connections = {};
+  self.connections = {};
 
   var netServer = net.createServer(onNewConnection);
   netServer.listen(port); 
 
   function onNewConnection(sock) {
     var connAddr = sock.address();
-    connections[connAddr] = {sock: sock, rxData: ''};
+    self.connections[connAddr] = {sock: sock, rxData: ''};
     sock.setEncoding('utf8');
    
     self.emit('connectionOpened', connAddr);
 
     sock.on('data', function(data) {
-      msgs = processRxData(connections[connAddr], data) || [];
+      msgs = processRxData(self.connections[connAddr], data) || [];
       msgs.forEach(function(msg) {
         self.emit('newMessage', connAddr, msg);
       });
     });
 
     sock.on('end', function() {
-      connections[connAddr] = null;
+      self.connections[connAddr] = null;
       self.emit('connectionClosed', connAddr);
     });
   }
@@ -42,23 +41,13 @@ var server = function(port) {
     });
   }
 
-  function send(connAddr, msg) {
-    var connection = connections[connAddr];
-    if (!connection) return self.emit('connectionError', connAddr, "invalid connection");
-    connection.sock.write(msg, function(err, result) {
-      self.emit('sendCompleted', err, result);
-    });
-  }
-}
-
-exports.createClient = function (options) {
-  return new client(options);
 }
 
 var client = function(options) {
   var self = this;
   var sock = net.connect(options);
-  this.connection = {sock: sock, rxData: ''}
+  self.connection = {sock: sock, rxData: ''}
+  sock.setEncoding('utf8');
 
   sock.on('connect', function() {
     self.emit('connected');
@@ -73,21 +62,32 @@ var client = function(options) {
   });
 
   sock.on('data', function(data) {
-    var msgs = processRxData(connect, data) || [];
+    var msgs = processRxData(self.connection, data) || [];
     msgs.forEach(function(msg) {
       self.emit('newMessage', msg);
     });
   });
 }
 
-
 util.inherits(server, EventEmitter);
 util.inherits(client, EventEmitter);
 
+
 client.prototype.send = function(msg) {
-  console.log("HERE", this);
+  var self = this;
+  self.connection.sock.write(msg, function(err, result) {
+    self.emit('sendCompleted', err, result);
+  });
 }
 
+server.prototype.send = function(connAddr, msg) {
+  var self = this;
+  var connection = self.connections[connAddr];
+  if (!connection) return self.emit('connectionError', connAddr, "invalid connection");
+  connection.sock.write(msg, function(err, result) {
+    self.emit('sendCompleted', connAddr);
+  });
+}
 
 function processRxData(connection, data) {
   if (!connection) return;
